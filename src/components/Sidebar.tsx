@@ -8,11 +8,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'ventas' as FormType, label: 'Ventas', icon: ShoppingCart },
-  { id: 'inventario' as FormType, label: 'Inventario', icon: Package },
-  { id: 'clientes' as FormType, label: 'Clientes', icon: Users },
-  { id: 'reportes' as FormType, label: 'Reportes', icon: FileText },
-  { id: 'estadisticas' as FormType, label: 'Estadísticas', icon: BarChart3 },
+  { id: 'ventas' as FormType, label: 'Pre Ventas', icon: ShoppingCart },
+  // { id: 'inventario' as FormType, label: 'Inventario', icon: Package },
+  // { id: 'clientes' as FormType, label: 'Clientes', icon: Users },
+  // { id: 'reportes' as FormType, label: 'Reportes', icon: FileText },
+  // { id: 'estadisticas' as FormType, label: 'Estadísticas', icon: BarChart3 },
 ];
 
 export default function Sidebar({ currentForm, onFormChange }: SidebarProps) {
