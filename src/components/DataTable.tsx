@@ -14,10 +14,25 @@ import {
   getExpandedRowModel,
   ExpandedState,
   getGroupedRowModel,
+  FilterFn, // <<<< 1. AÑADIR ESTA IMPORTACIÓN
 } from '@tanstack/react-table';
 
 import * as XLSX from 'xlsx'; // 💡 Importación de XLSX
 import { saveAs } from 'file-saver'; // 💡 Importación de file-saver
+
+const groupFilterFn: FilterFn<any> = (row, columnId, filterValue, addMeta) => {
+  const groupValue = row.getValue(columnId); 
+  const filterText = filterValue.toString().toLowerCase();
+
+  // 1. Si la fila está agrupada (es el encabezado de grupo), buscar en su valor.
+  if (row.getIsGrouped()) {
+    return groupValue?.toString().toLowerCase().includes(filterText);
+  }
+
+  // 2. Si la fila es una fila de detalle, buscar en el valor original.
+  return row.original[columnId]?.toString().toLowerCase().includes(filterText);
+};
+
 
 function Filter({ column, table }: { column: Column<any, any>; table: Table<any> }) {
   const columnFilterValue = column.getFilterValue();
@@ -65,14 +80,14 @@ export default function DataTable({ data }: DataTableProps) {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
-            hour: '2-digit',      // Añade la hora (ej: 08)
-            minute: '2-digit',    // Añade los minutos (ej: 30)
-            hour12: true,         // Usa formato AM/PM (puedes cambiarlo a false si prefieres 24h)
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true, 
           };
           return date.toLocaleDateString('es-ES', options);
         }
       } catch (e) {
-        // Si la conversión falla, simplemente devuelve el valor original
+        /* ignore */
       }
     }
 
@@ -88,23 +103,25 @@ export default function DataTable({ data }: DataTableProps) {
 
     const idColumn = columnHelper.accessor('Pre_Venta', {
       header: 'Pre-Venta',
-      cell: ({ row, getValue }) => {
-        if (!row.getIsGrouped()) {
-          return null;
-        }
-
-        return (
-          <div
-            onClick={row.getToggleExpandedHandler()}
-            style={{ cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            {row.getIsExpanded() ? '➖ ' : '➕ '}
-            {getValue()}
-            <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} ítems)</span>
-          </div>
-        );
-      },
+      
       enableColumnFilter: true,
+      filterFn: groupFilterFn, // <<< 2. APLICAR LA FUNCIÓN AQUÍ
+      
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) {
+          return (
+            <div
+              onClick={row.getToggleExpandedHandler()}
+              style={{ cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              {row.getIsExpanded() ? '➖ ' : '➕ '}
+              {getValue()}
+              <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} ítems)</span>
+            </div>
+          );
+        }
+        return formatCellValue(getValue(), 'Pre_Venta');
+      },
       enableSorting: true,
     });
     // Genera la definición de cada columna a partir de las claves
@@ -155,7 +172,6 @@ export default function DataTable({ data }: DataTableProps) {
 
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    // 💡 Habilitar redimensionamiento (propiedades adicionales)
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
   });
@@ -163,20 +179,15 @@ export default function DataTable({ data }: DataTableProps) {
   // 💡 NUEVA FUNCIÓN: Manejador de Descarga a Excel
   const handleDownloadExcel = () => {
     if (data.length === 0) {
-      alert('No hay datos para exportar.');
+      // Usar un modal o mensaje en lugar de alert()
+      console.error('No hay datos para exportar.');
       return;
     }
 
     const dataToExport = data;
-
-    //Crear una hoja de cálculo (worksheet)
     const ws = XLSX.utils.json_to_sheet(dataToExport);
-
-    // 3. Crear el libro de trabajo (workbook)
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Reporte");
-
-    // 4. Escribir y guardar el archivo
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
 
@@ -205,8 +216,8 @@ export default function DataTable({ data }: DataTableProps) {
       <div className="overflow-x-auto">
         {/* Aplicamos un ancho mínimo para que el redimensionamiento funcione */}
         <table
-          className="min-w-full" // Asegura que ocupe al menos el 100%
-          style={{ width: table.getTotalSize() > 0 ? table.getTotalSize() : '100%' }} // Si hay redimensionamiento, usa el tamaño total; sino, usa 100%
+          className="min-w-full"
+          style={{ width: table.getTotalSize() > 0 ? table.getTotalSize() : '100%' }}
         >
           <thead className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
             {table.getHeaderGroups().map(headerGroup => (
@@ -214,8 +225,8 @@ export default function DataTable({ data }: DataTableProps) {
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider relative" // relative es clave para el redimensionador
-                    style={{ width: header.getSize() }} // 💡 Ancho dinámico
+                    className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider relative" 
+                    style={{ width: header.getSize() }} 
                   >
                     <div
                       // 💡 Lógica de Ordenamiento al hacer click
@@ -254,13 +265,13 @@ export default function DataTable({ data }: DataTableProps) {
             {table.getRowModel().rows.map(row => (
               <tr
                 key={row.id}
-                className="hover:bg-gray-50 transition-colors"
+                className={`hover:bg-gray-50 transition-colors ${row.getIsExpanded() ? 'bg-indigo-50/70' : ''}`} // Resalta filas expandidas
               >
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
                     className="px-6 py-4 text-sm text-gray-700"
-                    style={{ width: cell.column.getSize() }} // 💡 Ancho de la celda
+                    style={{ width: cell.column.getSize() }} 
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
