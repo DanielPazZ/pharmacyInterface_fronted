@@ -9,8 +9,11 @@ import {
   createColumnHelper,
   Column,
   Table,
-  SortingState, // 💡 Tipo para el ordenamiento
-  ColumnFiltersState, // 💡 Tipo para los filtros (La solución principal)
+  SortingState,
+  ColumnFiltersState,
+  getExpandedRowModel,
+  ExpandedState,
+  getGroupedRowModel,
 } from '@tanstack/react-table';
 
 import * as XLSX from 'xlsx'; // 💡 Importación de XLSX
@@ -36,15 +39,21 @@ interface DataTableProps {
 
 const columnHelper = createColumnHelper<Record<string, any>>();
 
+const isDetailColumn = (key: string): boolean => {
+  const detailKeys = ['CÓDIGO_PRODUCTO', 'NOMBRE_PRODUCTO', 'CANTIDAD', 'PRECIO', 'IMPORTE'];
+  return detailKeys.includes(key);
+};
 
 export default function DataTable({ data }: DataTableProps) {
 
-  // Estado para manejar el ordenamiento global
-  const [sorting, setSorting] = useState([]);
-  // Estado para manejar los filtros de columna
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+  const [grouping, setGrouping] = useState(['Pre_Venta']);
 
   const dataKeys = Object.keys(data[0] ?? {});
+  const columnsToRender = dataKeys.filter(key => key !== 'Pre_Venta');
+
   console.log('DataTable data:', data);
 
   const formatCellValue = (value: any, column: string): string => {
@@ -67,31 +76,63 @@ export default function DataTable({ data }: DataTableProps) {
       }
     }
 
-    // // Formato para números grandes (ej: ventas, inventario)
-    // if (typeof value === 'number' && value > 1000) {
-    //       return new Intl.NumberFormat('es-ES').format(value);
-    // }
+    if (typeof value === 'number' && (column.toLowerCase().includes('precio') || column.toLowerCase().includes('importe') || column.toLowerCase().includes('cantidad'))) {
+      return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
 
     return String(value ?? '-');
   };
 
   // 3. Generación Dinámica de Columnas con useMemo
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => {
+
+    const idColumn = columnHelper.accessor('Pre_Venta', {
+      header: 'Pre-Venta',
+      cell: ({ row, getValue }) => {
+        if (!row.getIsGrouped()) {
+          return null;
+        }
+
+        return (
+          <div
+            onClick={row.getToggleExpandedHandler()}
+            style={{ cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            {row.getIsExpanded() ? '➖ ' : '➕ '}
+            {getValue()}
+            <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} ítems)</span>
+          </div>
+        );
+      },
+      enableColumnFilter: true,
+      enableSorting: true,
+    });
     // Genera la definición de cada columna a partir de las claves
-    return dataKeys.map((key) =>
+    const detailColumns = columnsToRender.map((key) =>
       columnHelper.accessor(key, {
-        header: key.toUpperCase(), // Título de la cabecera
+        header: key.toUpperCase().replace(/_/g, ' '),
         enableSorting: true,
         enableColumnFilter: true,
 
         // Definición de la celda (donde aplicamos el formato)
         cell: info => {
+          if (info.row.getIsGrouped()) {
+            if (isDetailColumn(key)) {
+              return null;
+            }
+
+            if (info.row.subRows.length > 0) {
+              return formatCellValue(info.row.subRows[0].original[key], key);
+            }
+            return null;
+          }
           return formatCellValue(info.getValue(), key);
         }
       })
     );
+    return [idColumn, ...detailColumns];
 
-  }, [dataKeys]);
+  }, [dataKeys, columnsToRender]);
 
   // 4. Inicializar TanStack Table
   const table = useReactTable({
@@ -100,12 +141,20 @@ export default function DataTable({ data }: DataTableProps) {
     state: {
       sorting,
       columnFilters,
+      expanded,
+      grouping,
     },
     onSortingChange: setSorting as any,
     onColumnFiltersChange: setColumnFilters,
+    onExpandedChange: setExpanded,
+    onGroupingChange: setGrouping,
+
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+
+    getGroupedRowModel: getGroupedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     // 💡 Habilitar redimensionamiento (propiedades adicionales)
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
