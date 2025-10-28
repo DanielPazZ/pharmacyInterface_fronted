@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
-useReactTable,
+  useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
@@ -117,10 +117,13 @@ export default function DataTable({ data }: DataTableProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg">
       <div className="overflow-x-auto">
         {/* Aplicamos un ancho mínimo para que el redimensionamiento funcione */}
-        <table className="w-full" style={{ width: table.getTotalSize() }}>
+        <table
+          className="min-w-full" // Asegura que ocupe al menos el 100%
+          style={{ width: table.getTotalSize() > 0 ? table.getTotalSize() : '100%' }} // Si hay redimensionamiento, usa el tamaño total; sino, usa 100%
+        >
           <thead className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
@@ -183,7 +186,7 @@ export default function DataTable({ data }: DataTableProps) {
           </tbody>
         </table>
       </div>
-      <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+      <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
         <p className="text-sm text-gray-600">
           Mostrando <span className="font-semibold">{table.getRowModel().rows.length}</span> resultado{table.getRowModel().rows.length !== 1 ? 's' : ''} (Total: {data.length})
         </p>
