@@ -50,7 +50,7 @@ function App() {
       <Sidebar currentForm={currentForm} onFormChange={handleFormChange} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="w-full px-8 py-8">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               {formTitles[currentForm]}

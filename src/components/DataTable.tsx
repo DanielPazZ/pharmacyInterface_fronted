@@ -16,6 +16,31 @@ export default function DataTable({ data }: DataTableProps) {
     );
   }
 
+    const formatCellValue = (value: any, column: string): string => {
+        if (typeof value === 'string' && column.toLowerCase().includes('fecha')) {
+            try {
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                    const options: Intl.DateTimeFormatOptions = { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',      // Añade la hora (ej: 08)
+                        minute: '2-digit',    // Añade los minutos (ej: 30)
+                        hour12: true,         // Usa formato AM/PM (puedes cambiarlo a false si prefieres 24h)
+                    };
+                    return date.toLocaleDateString('es-ES', options);
+                }
+            } catch (e) {
+                // Si la conversión falla, simplemente devuelve el valor original
+            }
+        }
+        
+        // 3. Valor por defecto si no es una fecha
+        return String(value ?? '-');
+    };
+
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="overflow-x-auto">
@@ -43,7 +68,7 @@ export default function DataTable({ data }: DataTableProps) {
                     key={column}
                     className="px-6 py-4 text-sm text-gray-700"
                   >
-                    {row[column] || '-'}
+                    {formatCellValue(row[column], column)}
                   </td>
                 ))}
               </tr>
