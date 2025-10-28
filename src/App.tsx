@@ -2,28 +2,29 @@ import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import SearchForm from './components/SearchForm';
 import DataTable from './components/DataTable';
-import { FormData, PharmacyData, FormType } from './types/pharmacy';
+import { FormData, FormType } from './types/pharmacy';
 import { fetchData } from './services/api';
 
 const formColumns: Record<FormType, string[]> = {
+  preventas: ['Nombre', 'Tipo', 'Dirección', 'Ventas', 'Productos', 'Fecha'],
   ventas: ['Nombre', 'Tipo', 'Dirección', 'Ventas', 'Productos', 'Fecha'],
   inventario: ['Nombre', 'Tipo', 'Dirección', 'Stock', 'ValorInventario', 'Fecha'],
-  clientes: ['Nombre', 'Tipo', 'Dirección', 'TotalClientes', 'ClientesNuevos', 'Fecha'],
   reportes: ['Nombre', 'Tipo', 'Dirección', 'ReportesGenerados', 'UltimoReporte'],
   estadisticas: ['Nombre', 'Tipo', 'Dirección', 'PromedioDiario', 'Tendencia', 'Fecha'],
 };
 
 const formTitles: Record<FormType, string> = {
+  preventas: 'Reporte de Pre-Ventas',
   ventas: 'Reporte de Ventas',
   inventario: 'Control de Inventario',
-  clientes: 'Gestión de Clientes',
   reportes: 'Reportes Generados',
   estadisticas: 'Estadísticas Generales',
 };
 
 function App() {
-  const [currentForm, setCurrentForm] = useState<FormType>('ventas');
-  const [data, setData] = useState<PharmacyData[]>([]);
+  const [currentForm, setCurrentForm] = useState<FormType>('preventas');
+  // const [data, setData] = useState<PharmacyData[]>([]);
+  const [data, setData] = useState<[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async (formData: FormData) => {

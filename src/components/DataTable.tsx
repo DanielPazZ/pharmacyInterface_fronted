@@ -1,11 +1,13 @@
-import { PharmacyData } from '../types/pharmacy';
-
 interface DataTableProps {
-  data: PharmacyData[];
+  // data: PharmacyData[];
+  data: Array<Record<string, any>>;
   columns: string[];
 }
 
-export default function DataTable({ data, columns }: DataTableProps) {
+export default function DataTable({ data }: DataTableProps) {
+  const  columns = Object.keys(data[0] ?? {});
+  console.log('DataTable data:', data);
+
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-12 text-center">
@@ -41,7 +43,7 @@ export default function DataTable({ data, columns }: DataTableProps) {
                     key={column}
                     className="px-6 py-4 text-sm text-gray-700"
                   >
-                    {row[column.toLowerCase()] || '-'}
+                    {row[column] || '-'}
                   </td>
                 ))}
               </tr>

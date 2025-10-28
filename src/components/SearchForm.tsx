@@ -8,11 +8,15 @@ interface SearchFormProps {
 }
 
 const tiposFarmacia = [
-  { value: '', label: 'Todos' },
-  { value: 'independiente', label: 'Independiente' },
-  { value: 'cadena', label: 'Cadena' },
-  { value: 'hospital', label: 'Hospital' },
-  { value: 'clinica', label: 'Clínica' },
+  { value: '2', label: 'Almacen Especializado - Sismed' },
+  { value: '3', label: 'Almacen Especializado - Donaciones' },
+  { value: '4', label: 'Farmacia Principal - Sismed' },
+  { value: '5', label: 'Farmacia Principal - Donaciones' },
+  { value: '6', label: 'Farmacia Consultorios Externos - Sismed' },
+  { value: '7', label: 'Farmacia Quirurgica - Sismed' },
+  { value: '8', label: 'Farmacia Emergencia - Sismed' },
+  { value: '9', label: 'Farmacia Emergencia - Donaciones' },
+  { value: '10', label: 'Otros Servicios del Hospital' },
 ];
 
 export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {

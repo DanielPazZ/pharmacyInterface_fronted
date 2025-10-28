@@ -8,7 +8,7 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'ventas' as FormType, label: 'Pre Ventas', icon: ShoppingCart },
+  { id: 'preventas' as FormType, label: 'Pre Ventas', icon: ShoppingCart },
   // { id: 'inventario' as FormType, label: 'Inventario', icon: Package },
   // { id: 'clientes' as FormType, label: 'Clientes', icon: Users },
   // { id: 'reportes' as FormType, label: 'Reportes', icon: FileText },
