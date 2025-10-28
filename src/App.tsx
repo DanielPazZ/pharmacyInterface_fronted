@@ -5,14 +5,6 @@ import DataTable from './components/DataTable';
 import { FormData, FormType } from './types/pharmacy';
 import { fetchData } from './services/api';
 
-const formColumns: Record<FormType, string[]> = {
-  preventas: ['Nombre', 'Tipo', 'Dirección', 'Ventas', 'Productos', 'Fecha'],
-  ventas: ['Nombre', 'Tipo', 'Dirección', 'Ventas', 'Productos', 'Fecha'],
-  inventario: ['Nombre', 'Tipo', 'Dirección', 'Stock', 'ValorInventario', 'Fecha'],
-  reportes: ['Nombre', 'Tipo', 'Dirección', 'ReportesGenerados', 'UltimoReporte'],
-  estadisticas: ['Nombre', 'Tipo', 'Dirección', 'PromedioDiario', 'Tendencia', 'Fecha'],
-};
-
 const formTitles: Record<FormType, string> = {
   preventas: 'Reporte de Pre-Ventas',
   ventas: 'Reporte de Ventas',
@@ -50,7 +42,7 @@ function App() {
       <Sidebar currentForm={currentForm} onFormChange={handleFormChange} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="w-full px-8 py-8">
+        <div className="mx-auto p-8">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               {formTitles[currentForm]}
@@ -64,7 +56,6 @@ function App() {
 
           <DataTable
             data={data}
-            columns={formColumns[currentForm]}
           />
         </div>
       </main>
