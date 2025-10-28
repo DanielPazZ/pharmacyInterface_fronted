@@ -13,6 +13,9 @@ import {
   ColumnFiltersState, // 💡 Tipo para los filtros (La solución principal)
 } from '@tanstack/react-table';
 
+import * as XLSX from 'xlsx'; // 💡 Importación de XLSX
+import { saveAs } from 'file-saver'; // 💡 Importación de file-saver
+
 function Filter({ column, table }: { column: Column<any, any>; table: Table<any> }) {
   const columnFilterValue = column.getFilterValue();
 
@@ -108,6 +111,29 @@ export default function DataTable({ data }: DataTableProps) {
     columnResizeMode: 'onChange',
   });
 
+  // 💡 NUEVA FUNCIÓN: Manejador de Descarga a Excel
+  const handleDownloadExcel = () => {
+    if (data.length === 0) {
+      alert('No hay datos para exportar.');
+      return;
+    }
+
+    const dataToExport = data;
+
+    //Crear una hoja de cálculo (worksheet)
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+
+    // 3. Crear el libro de trabajo (workbook)
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+
+    // 4. Escribir y guardar el archivo
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+
+    saveAs(dataBlob, `Reporte_Farmacia_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-12 text-center">
@@ -118,6 +144,15 @@ export default function DataTable({ data }: DataTableProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-lg">
+      <div className="flex justify-end p-4 border-b border-gray-200">
+        <button
+          onClick={handleDownloadExcel}
+          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Descargar Excel</span>
+        </button>
+      </div>
       <div className="overflow-x-auto">
         {/* Aplicamos un ancho mínimo para que el redimensionamiento funcione */}
         <table
