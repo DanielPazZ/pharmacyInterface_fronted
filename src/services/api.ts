@@ -23,7 +23,7 @@ export const fetchData = async (
   const queryParams = new URLSearchParams({
     fechaInicio: filters.fechaInicio,
     fechaFin: filters.fechaFin,
-    ...(filters.tipoFarmacia && { tipoFarmacia: filters.tipoFarmacia }),
+    ...(filters.almacenId && { almacenId: filters.almacenId }),
   });
 
   try {

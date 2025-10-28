@@ -23,7 +23,7 @@ export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
   const [formData, setFormData] = useState<FormData>({
     fechaInicio: '',
     fechaFin: '',
-    tipoFarmacia: '',
+    almacenId: '4',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,13 +73,13 @@ export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
         </div>
 
         <div>
-          <label htmlFor="tipoFarmacia" className="block text-sm font-semibold text-gray-700 mb-2">
-            Tipo de Farmacia
+          <label htmlFor="almacenId" className="block text-sm font-semibold text-gray-700 mb-2">
+            Farmacia o Almacén
           </label>
           <select
-            id="tipoFarmacia"
-            name="tipoFarmacia"
-            value={formData.tipoFarmacia}
+            id="almacenId"
+            name="almacenId"
+            value={formData.almacenId}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
           >

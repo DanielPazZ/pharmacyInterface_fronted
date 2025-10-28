@@ -1,7 +1,7 @@
 export interface FormData {
   fechaInicio: string;
   fechaFin: string;
-  tipoFarmacia: string;
+  almacenId: string;
 }
 
 export type FormType =
