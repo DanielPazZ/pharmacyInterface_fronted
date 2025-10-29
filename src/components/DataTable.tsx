@@ -14,14 +14,14 @@ import {
   getExpandedRowModel,
   ExpandedState,
   getGroupedRowModel,
-  FilterFn, // <<<< 1. AÑADIR ESTA IMPORTACIÓN
+  FilterFn,
 } from '@tanstack/react-table';
 
 import * as XLSX from 'xlsx'; // 💡 Importación de XLSX
 import { saveAs } from 'file-saver'; // 💡 Importación de file-saver
 
 const groupFilterFn: FilterFn<any> = (row, columnId, filterValue, addMeta) => {
-  const groupValue = row.getValue(columnId); 
+  const groupValue = row.getValue(columnId);
   const filterText = filterValue.toString().toLowerCase();
 
   // 1. Si la fila está agrupada (es el encabezado de grupo), buscar en su valor.
@@ -55,7 +55,7 @@ interface DataTableProps {
 const columnHelper = createColumnHelper<Record<string, any>>();
 
 const isDetailColumn = (key: string): boolean => {
-  const detailKeys = ['CÓDIGO_PRODUCTO', 'NOMBRE_PRODUCTO', 'CANTIDAD', 'PRECIO', 'IMPORTE'];
+  const detailKeys = ['Estado', 'Fecha', 'Vendedor', 'TipoReceta'];
   return detailKeys.includes(key);
 };
 
@@ -80,9 +80,9 @@ export default function DataTable({ data }: DataTableProps) {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
-            hour: '2-digit', 
-            minute: '2-digit', 
-            hour12: true, 
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
           };
           return date.toLocaleDateString('es-ES', options);
         }
@@ -98,14 +98,13 @@ export default function DataTable({ data }: DataTableProps) {
     return String(value ?? '-');
   };
 
-  // 3. Generación Dinámica de Columnas con useMemo
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => {
 
     const idColumn = columnHelper.accessor('Pre_Venta', {
       header: 'Pre-Venta',
       
       enableColumnFilter: true,
-      filterFn: groupFilterFn, // <<< 2. APLICAR LA FUNCIÓN AQUÍ
+      filterFn: groupFilterFn, 
       
       cell: ({ row, getValue }) => {
         if (row.getIsGrouped()) {
@@ -116,7 +115,8 @@ export default function DataTable({ data }: DataTableProps) {
             >
               {row.getIsExpanded() ? '➖ ' : '➕ '}
               {getValue()}
-              <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} ítems)</span>
+              <br></br>
+              <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} producto{row.subRows.length !== 1 ? 's' : ''})</span>
             </div>
           );
         }
@@ -135,10 +135,9 @@ export default function DataTable({ data }: DataTableProps) {
         cell: info => {
           if (info.row.getIsGrouped()) {
             if (isDetailColumn(key)) {
-              return null;
+              return formatCellValue(info.row.subRows[0].original[key], key);
             }
-
-            if (info.row.subRows.length > 0) {
+            if (info.row.subRows.length == 1) {
               return formatCellValue(info.row.subRows[0].original[key], key);
             }
             return null;
@@ -151,7 +150,6 @@ export default function DataTable({ data }: DataTableProps) {
 
   }, [dataKeys, columnsToRender]);
 
-  // 4. Inicializar TanStack Table
   const table = useReactTable({
     data,
     columns,
@@ -176,10 +174,8 @@ export default function DataTable({ data }: DataTableProps) {
     columnResizeMode: 'onChange',
   });
 
-  // 💡 NUEVA FUNCIÓN: Manejador de Descarga a Excel
   const handleDownloadExcel = () => {
     if (data.length === 0) {
-      // Usar un modal o mensaje en lugar de alert()
       console.error('No hay datos para exportar.');
       return;
     }
@@ -225,8 +221,8 @@ export default function DataTable({ data }: DataTableProps) {
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider relative" 
-                    style={{ width: header.getSize() }} 
+                    className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider relative"
+                    style={{ width: header.getSize() }}
                   >
                     <div
                       // 💡 Lógica de Ordenamiento al hacer click
@@ -271,7 +267,7 @@ export default function DataTable({ data }: DataTableProps) {
                   <td
                     key={cell.id}
                     className="px-6 py-4 text-sm text-gray-700"
-                    style={{ width: cell.column.getSize() }} 
+                    style={{ width: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -283,7 +279,7 @@ export default function DataTable({ data }: DataTableProps) {
       </div>
       <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
         <p className="text-sm text-gray-600">
-          Mostrando <span className="font-semibold">{table.getRowModel().rows.length}</span> resultado{table.getRowModel().rows.length !== 1 ? 's' : ''} (Total: {data.length})
+          Mostrando <span className="font-semibold">{table.getRowModel().rows.length}</span> fila{table.getRowModel().rows.length !== 1 ? 's' : ''} (Total: {data.length} productos)
         </p>
       </div>
     </div>
