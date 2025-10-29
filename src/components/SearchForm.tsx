@@ -8,18 +8,22 @@ interface SearchFormProps {
 }
 
 const tiposFarmacia = [
-  { value: '', label: 'Todos' },
-  { value: 'independiente', label: 'Independiente' },
-  { value: 'cadena', label: 'Cadena' },
-  { value: 'hospital', label: 'Hospital' },
-  { value: 'clinica', label: 'Clínica' },
+  { value: '2', label: 'Almacen Especializado - Sismed' },
+  { value: '3', label: 'Almacen Especializado - Donaciones' },
+  { value: '4', label: 'Farmacia Principal - Sismed' },
+  { value: '5', label: 'Farmacia Principal - Donaciones' },
+  { value: '6', label: 'Farmacia Consultorios Externos - Sismed' },
+  { value: '7', label: 'Farmacia Quirurgica - Sismed' },
+  { value: '8', label: 'Farmacia Emergencia - Sismed' },
+  { value: '9', label: 'Farmacia Emergencia - Donaciones' },
+  { value: '10', label: 'Otros Servicios del Hospital' },
 ];
 
 export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
   const [formData, setFormData] = useState<FormData>({
     fechaInicio: '',
     fechaFin: '',
-    tipoFarmacia: '',
+    almacenId: '4',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -69,13 +73,13 @@ export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
         </div>
 
         <div>
-          <label htmlFor="tipoFarmacia" className="block text-sm font-semibold text-gray-700 mb-2">
-            Tipo de Farmacia
+          <label htmlFor="almacenId" className="block text-sm font-semibold text-gray-700 mb-2">
+            Farmacia o Almacén
           </label>
           <select
-            id="tipoFarmacia"
-            name="tipoFarmacia"
-            value={formData.tipoFarmacia}
+            id="almacenId"
+            name="almacenId"
+            value={formData.almacenId}
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
           >

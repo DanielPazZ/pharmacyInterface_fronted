@@ -1,22 +1,12 @@
 export interface FormData {
   fechaInicio: string;
   fechaFin: string;
-  tipoFarmacia: string;
-}
-
-export interface PharmacyData {
-  id: string;
-  nombre: string;
-  tipo: string;
-  direccion: string;
-  ventas: number;
-  fecha: string;
-  [key: string]: any;
+  almacenId: string;
 }
 
 export type FormType =
+  | 'preventas'
   | 'ventas'
   | 'inventario'
-  | 'clientes'
   | 'reportes'
   | 'estadisticas';
