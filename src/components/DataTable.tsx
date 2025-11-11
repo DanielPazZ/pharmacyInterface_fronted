@@ -55,7 +55,7 @@ interface DataTableProps {
 const columnHelper = createColumnHelper<Record<string, any>>();
 
 const isDetailColumn = (key: string): boolean => {
-  const detailKeys = ['Estado', 'Fecha', 'Vendedor', 'TipoReceta'];
+  const detailKeys = ['Pre-venta','Estado', 'Fecha', 'Vendedor', 'Tipo_Receta'];
   return detailKeys.includes(key);
 };
 
@@ -102,10 +102,10 @@ export default function DataTable({ data }: DataTableProps) {
 
     const idColumn = columnHelper.accessor('Pre_Venta', {
       header: 'Pre-Venta',
-      
+
       enableColumnFilter: true,
-      filterFn: groupFilterFn, 
-      
+      filterFn: groupFilterFn,
+
       cell: ({ row, getValue }) => {
         if (row.getIsGrouped()) {
           return (
@@ -120,7 +120,7 @@ export default function DataTable({ data }: DataTableProps) {
             </div>
           );
         }
-        return formatCellValue(getValue(), 'Pre_Venta');
+        // return formatCellValue(getValue(), 'Pre_Venta');
       },
       enableSorting: true,
     });
@@ -137,12 +137,15 @@ export default function DataTable({ data }: DataTableProps) {
             if (isDetailColumn(key)) {
               return formatCellValue(info.row.subRows[0].original[key], key);
             }
-            if (info.row.subRows.length == 1) {
-              return formatCellValue(info.row.subRows[0].original[key], key);
-            }
+            // if (info.row.subRows.length == 1) {
+            //   return formatCellValue(info.row.subRows[0].original[key], key);
+            // }
             return null;
           }
-          return formatCellValue(info.getValue(), key);
+          if (!isDetailColumn(key)) {
+            return formatCellValue(info.getValue(), key);
+          }
+
         }
       })
     );
