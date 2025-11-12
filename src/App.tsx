@@ -7,10 +7,7 @@ import { fetchData } from './services/api';
 
 const formTitles: Record<FormType, string> = {
   preventas: 'Reporte de Pre-Ventas',
-  ventas: 'Reporte de Ventas',
-  inventario: 'Control de Inventario',
-  reportes: 'Reportes Generados',
-  estadisticas: 'Estadísticas Generales',
+  saldos: 'Saldos de medicamentos',
 };
 
 function App() {
@@ -52,7 +49,7 @@ function App() {
             </p>
           </div>
 
-          <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+          <SearchForm onSearch={handleSearch} isLoading={isLoading} typeForm={currentForm}/>
 
           <DataTable
             data={data}

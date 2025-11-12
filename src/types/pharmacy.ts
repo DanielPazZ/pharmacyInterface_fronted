@@ -1,12 +1,15 @@
-export interface FormData {
+export interface FormDataPreventas {
   fechaInicio: string;
   fechaFin: string;
   almacenId: string;
 }
+export interface FormDataSaldos {
+  almacenId: string;
+  codigoMedicamento?: string;
+}
 
 export type FormType =
   | 'preventas'
-  | 'ventas'
-  | 'inventario'
-  | 'reportes'
-  | 'estadisticas';
+  | 'saldos';
+
+export type FormData = FormDataPreventas | FormDataSaldos;

@@ -1,14 +1,10 @@
-import { FormData, FormType } from '../types/pharmacy';
-
+import { FormData, FormType, FormDataSaldos, FormDataPreventas } from '../types/pharmacy';
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const getEndpoint = (formType: FormType): string => {
   const endpoints: Record<FormType, string> = {
     preventas: '/preventa',
-    ventas: '/api/ventas',
-    inventario: '/api/inventario',
-    reportes: '/api/reportes',
-    estadisticas: '/api/estadisticas',
+    saldos: '/saldos',
   };
   return endpoints[formType];
 };
@@ -17,16 +13,29 @@ export const fetchData = async (
   formType: FormType,
   filters: FormData
 ): Promise<[]> => {
-// ): Promise<PharmacyData[]> => {
+  // ): Promise<PharmacyData[]> => {
   const endpoint = getEndpoint(formType);
+  const params = new URLSearchParams();
 
-  const queryParams = new URLSearchParams({
-    fechaInicio: filters.fechaInicio,
-    fechaFin: filters.fechaFin,
-    ...(filters.almacenId && { almacenId: filters.almacenId }),
-  });
+  if (formType === 'saldos') {
+    const saldosFilters = filters as FormDataSaldos;
 
+    params.append('almacenId', saldosFilters.almacenId);
+    if (saldosFilters.codigoMedicamento) {
+      params.append('codigoMedicamento', saldosFilters.codigoMedicamento);
+    }
+
+  } else if (formType === 'preventas') {
+    const preventasFilters = filters as FormDataPreventas;
+    params.append('fechaInicio', preventasFilters.fechaInicio);
+    params.append('fechaFin', preventasFilters.fechaFin);
+
+    if (preventasFilters.almacenId) {
+      params.append('almacenId', preventasFilters.almacenId);
+    }
+  }
   try {
+    const queryParams = params.toString();
     // console.log('Fetch URL:', `${API_BASE_URL}${endpoint}?${queryParams}`);
     const response = await fetch(`${API_BASE_URL}${endpoint}?${queryParams}`, {
       method: 'GET',
@@ -37,7 +46,7 @@ export const fetchData = async (
     if (!response.ok) {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('data:', `${data}`);
     return data.data;

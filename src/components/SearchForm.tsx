@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
-import { FormData } from '../types/pharmacy';
+import { FormDataPreventas, FormDataSaldos, FormType } from '../types/pharmacy';
+
+type FormData = FormDataPreventas | FormDataSaldos;
 
 interface SearchFormProps {
   onSearch: (data: FormData) => void;
   isLoading: boolean;
+  typeForm: FormType
 }
 
 const tiposFarmacia = [
@@ -19,12 +22,25 @@ const tiposFarmacia = [
   { value: '10', label: 'Otros Servicios del Hospital' },
 ];
 
-export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
-  const [formData, setFormData] = useState<FormData>({
-    fechaInicio: '',
-    fechaFin: '',
-    almacenId: '4',
-  });
+
+export default function SearchForm({ onSearch, isLoading, typeForm }: SearchFormProps) {
+  const initialData = useMemo(() => {
+    if (typeForm === 'preventas') {
+      return {
+        almacenId: '4',
+      } as FormDataSaldos;
+
+    }
+    return {
+      fechaInicio: '',
+      fechaFin: '',
+      almacenId: '4',
+    } as FormDataPreventas;
+
+  }, [typeForm]); // Se recalcula si typeForm cambia
+
+  const [formData, setFormData] = useState(initialData);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,61 +52,105 @@ export default function SearchForm({ onSearch, isLoading }: SearchFormProps) {
     setFormData(prev => ({
       ...prev,
       [name]: value,
-    }));
+    }) as FormData);
   };
+
+  const showDateFieldsPreventa = typeForm === 'preventas';
+  const showDateFieldsSaldos = typeForm === 'saldos';
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-        <div>
-          <label htmlFor="fechaInicio" className="block text-sm font-semibold text-gray-700 mb-2">
-            Fecha Inicio
-          </label>
-          <input
-            type="date"
-            id="fechaInicio"
-            name="fechaInicio"
-            value={formData.fechaInicio}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            required
-          />
-        </div>
 
-        <div>
-          <label htmlFor="fechaFin" className="block text-sm font-semibold text-gray-700 mb-2">
-            Fecha Fin
-          </label>
-          <input
-            type="date"
-            id="fechaFin"
-            name="fechaFin"
-            value={formData.fechaFin}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            required
-          />
-        </div>
+        {showDateFieldsPreventa && (
+          <>
+            <div>
+              <label htmlFor="fechaInicio" className="block text-sm font-semibold text-gray-700 mb-2">
+                Fecha Inicio
+              </label>
+              <input
+                type="date"
+                id="fechaInicio"
+                name="fechaInicio"
+                // El casting 'as' es necesario para acceder a fechaInicio de forma segura
+                value={(formData as FormDataPreventas).fechaInicio || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required={showDateFieldsPreventa} // Requerido solo si se muestra
+              />
+            </div>
 
-        <div>
-          <label htmlFor="almacenId" className="block text-sm font-semibold text-gray-700 mb-2">
-            Farmacia o Almacén
-          </label>
-          <select
-            id="almacenId"
-            name="almacenId"
-            value={formData.almacenId}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-          >
-            {tiposFarmacia.map(tipo => (
-              <option key={tipo.value} value={tipo.value}>
-                {tipo.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div>
+              <label htmlFor="fechaFin" className="block text-sm font-semibold text-gray-700 mb-2">
+                Fecha Fin
+              </label>
+              <input
+                type="date"
+                id="fechaFin"
+                name="fechaFin"
+                value={(formData as FormDataPreventas).fechaFin || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required={showDateFieldsPreventa} // Requerido solo si se muestra
+              />
+            </div>
+            <div>
+              <label htmlFor="almacenId" className="block text-sm font-semibold text-gray-700 mb-2">
+                Farmacia o Almacén
+              </label>
+              <select
+                id="almacenId"
+                name="almacenId"
+                value={formData.almacenId}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+              >
+                {tiposFarmacia.map(tipo => (
+                  <option key={tipo.value} value={tipo.value}>
+                    {tipo.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
 
+        {showDateFieldsSaldos && (
+          <>
+            <div>
+              <label htmlFor="almacenId" className="block text-sm font-semibold text-gray-700 mb-2">
+                Farmacia o Almacén
+              </label>
+              <select
+                id="almacenId"
+                name="almacenId"
+                value={formData.almacenId}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+              >
+                {tiposFarmacia.map(tipo => (
+                  <option key={tipo.value} value={tipo.value}>
+                    {tipo.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="fechaInicio" className="block text-sm font-semibold text-gray-700 mb-2">
+                Código de Medicamento (Opcional)
+              </label>
+              <input
+                type="text"
+                id="codigoMedicamento"
+                name="codigoMedicamento"
+                // El casting 'as' es necesario para acceder a fechaInicio de forma segura
+                value={(formData as FormDataSaldos).codigoMedicamento || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+            </div>
+          </>
+        )}
         <div>
           <button
             type="submit"
