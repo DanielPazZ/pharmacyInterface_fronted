@@ -6,6 +6,7 @@ export interface FormDataPreventas {
 export interface FormDataSaldos {
   almacenId: string;
   codigoMedicamento?: string;
+  mostrarSaldosCero?: boolean;
 }
 
 export type FormType =

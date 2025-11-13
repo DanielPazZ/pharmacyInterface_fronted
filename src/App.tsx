@@ -51,9 +51,7 @@ function App() {
 
           <SearchForm onSearch={handleSearch} isLoading={isLoading} typeForm={currentForm}/>
 
-          <DataTable
-            data={data}
-          />
+          <DataTable data={data} typeForm={currentForm}/>
         </div>
       </main>
     </div>

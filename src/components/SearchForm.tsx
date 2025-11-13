@@ -25,7 +25,7 @@ const tiposFarmacia = [
 
 export default function SearchForm({ onSearch, isLoading, typeForm }: SearchFormProps) {
   const initialData = useMemo(() => {
-    if (typeForm === 'preventas') {
+    if (typeForm === 'saldos') {
       return {
         almacenId: '4',
       } as FormDataSaldos;
@@ -136,18 +136,31 @@ export default function SearchForm({ onSearch, isLoading, typeForm }: SearchForm
               </select>
             </div>
             <div>
-              <label htmlFor="fechaInicio" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="codigoMedicamento" className="block text-sm font-semibold text-gray-700 mb-2">
                 Código de Medicamento (Opcional)
               </label>
               <input
                 type="text"
                 id="codigoMedicamento"
                 name="codigoMedicamento"
-                // El casting 'as' es necesario para acceder a fechaInicio de forma segura
-                value={(formData as FormDataSaldos).codigoMedicamento || ''}
+                value={(formData as FormDataSaldos).codigoMedicamento?.trim() || ''}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
+            </div>
+            <div className="flex items-center h-full pt-2">
+              <input
+                type="checkbox"
+                id="mostrarSaldosCero" // Usar un ID y nombre más semántico
+                name="mostrarSaldosCero"
+                checked={(formData as FormDataSaldos).mostrarSaldosCero || false}
+                onChange={handleChange}
+                // Estilos de checkbox nativos mejorados con Tailwind
+                className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="mostrarSaldosCero" className="ml-3 block text-sm font-medium text-gray-700 select-none">
+                Mostrar saldos en cero
+              </label>
             </div>
           </>
         )}

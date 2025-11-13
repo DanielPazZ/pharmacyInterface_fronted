@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,9 +16,11 @@ import {
   getGroupedRowModel,
   FilterFn,
 } from '@tanstack/react-table';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+const initialGroupingKey = 'Código';
 
-import * as XLSX from 'xlsx'; // 💡 Importación de XLSX
-import { saveAs } from 'file-saver'; // 💡 Importación de file-saver
+type FormType = 'saldos' | 'preventas' | string;
 
 const groupFilterFn: FilterFn<any> = (row, columnId, filterValue, addMeta) => {
   const groupValue = row.getValue(columnId);
@@ -50,24 +52,48 @@ function Filter({ column, table }: { column: Column<any, any>; table: Table<any>
 
 interface DataTableProps {
   data: Array<Record<string, any>>;
+  typeForm: FormType;
 }
 
 const columnHelper = createColumnHelper<Record<string, any>>();
 
-const isDetailColumn = (key: string): boolean => {
-  const detailKeys = ['Pre-venta','Estado', 'Fecha', 'Vendedor', 'Tipo_Receta'];
-  return detailKeys.includes(key);
-};
 
-export default function DataTable({ data }: DataTableProps) {
+export default function DataTable({ data, typeForm }: DataTableProps) {
+ 
+  const columName = useMemo(() => {
+      return (typeForm: FormType) => {
+        return typeForm === 'saldos' ? 'Código' : 'Pre_Venta';
+      };
+    }, []);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [expanded, setExpanded] = useState<ExpandedState>({});
-  const [grouping, setGrouping] = useState(['Pre_Venta']);
+  const [grouping, setGrouping] = useState([initialGroupingKey]);
+  
+  useEffect(() => {
+    const newGroupingKey = columName(typeForm);
+    // Solo actualiza si realmente cambia
+    if (grouping[0] !== newGroupingKey) {
+        setGrouping([newGroupingKey]);
+    }
+  }, [typeForm, columName]);
 
+  const groupingKey = grouping[0];
   const dataKeys = Object.keys(data[0] ?? {});
-  const columnsToRender = dataKeys.filter(key => key !== 'Pre_Venta');
+
+  const columnsToRender = dataKeys.filter(key => key !== groupingKey);
+
+
+  const isDetailColumn = (key: string): boolean => {
+    if (typeForm === 'saldos') {
+      const saldosDetailKeys = ['Código', 'Producto','Ubicación'];
+      return saldosDetailKeys.includes(key);
+    } else {
+      const detailKeys = ['Pre-venta', 'Estado', 'Fecha', 'Vendedor', 'Tipo_Receta'];
+      return detailKeys.includes(key);
+    }
+  };
 
   console.log('DataTable data:', data);
 
@@ -99,31 +125,33 @@ export default function DataTable({ data }: DataTableProps) {
   };
 
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => {
+    let idColumn: ColumnDef<Record<string, any>>
+ 
+      idColumn = columnHelper.accessor(columName(typeForm), {
+        header: columName(typeForm),
 
-    const idColumn = columnHelper.accessor('Pre_Venta', {
-      header: 'Pre-Venta',
+        enableColumnFilter: true,
+        filterFn: groupFilterFn,
 
-      enableColumnFilter: true,
-      filterFn: groupFilterFn,
-
-      cell: ({ row, getValue }) => {
-        if (row.getIsGrouped()) {
-          return (
-            <div
-              onClick={row.getToggleExpandedHandler()}
-              style={{ cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              {row.getIsExpanded() ? '➖ ' : '➕ '}
-              {getValue()}
-              <br></br>
-              <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} producto{row.subRows.length !== 1 ? 's' : ''})</span>
-            </div>
-          );
-        }
-        // return formatCellValue(getValue(), 'Pre_Venta');
-      },
-      enableSorting: true,
-    });
+        cell: ({ row, getValue }) => {
+          if (row.getIsGrouped()) {
+            return (
+              <div
+                onClick={row.getToggleExpandedHandler()}
+                style={{ cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                {row.getIsExpanded() ? '➖ ' : '➕ '}
+                {String(getValue())}
+                <br></br>
+                <span className="text-gray-500 font-normal text-xs ml-2">({row.subRows.length} producto{row.subRows.length !== 1 ? 's' : ''})</span>
+              </div>
+            );
+          }
+          // return formatCellValue(getValue(), 'Pre_Venta');
+        },
+        enableSorting: true,
+      });
+    
     // Genera la definición de cada columna a partir de las claves
     const detailColumns = columnsToRender.map((key) =>
       columnHelper.accessor(key, {
